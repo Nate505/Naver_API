@@ -5,4 +5,5 @@ export interface SearchResponse {
     hasMore: boolean;
     total: number;
     data: Card[];
+    error?: Error;
 }
