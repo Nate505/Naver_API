@@ -1,6 +1,7 @@
 import { Card } from "../cards/types";
 import { SearchResponse } from "./dataTypes"
 import { ProxyAgent, fetch } from "undici";
+import { runCDP } from "./runCDP";
 
 export async function searchSession(urls: string){
     const url: URL = new URL(urls);
@@ -10,7 +11,7 @@ export async function searchSession(urls: string){
     let cursor: number = raw ? parseInt(raw) : 0;
     
     const proxyAgent = new ProxyAgent({
-        uri: "http://undjpses:xfro5kl937n7@142.111.48.253:7030",
+        uri: "http://td-customer-mrscraperTrial-country-kr:P3nNRQ8C2@6n8xhsmh.as.thordata.net:9999",
         connect: {
             timeout: 10_000,
         },
@@ -19,16 +20,21 @@ export async function searchSession(urls: string){
     async function fetchNextPage(){
         try{
             const query = url.searchParams.get("query") ?? "";
-            const referer = "https://search.shopping.naver.com/search/all?query=" + encodeURIComponent(query);
+            const referer = "https://search.shopping.naver.com/ns/search?query=" + encodeURIComponent(query);
             
+            const { cookieHeader, userAgent } = await runCDP(query);
+
+            console.log(cookieHeader);
+
             const response = await fetch(url.toString(), {
                 method: "GET",
                 dispatcher: proxyAgent,
                 headers: {
-                    "User-Agent": pickRandomUA(),
+                    "User-Agent": userAgent,
                     "Accept": "*/*",
                     "Accept-Encoding": "gzip, deflate, br",
-                    "Referer": referer
+                    "Referer": referer,
+                    "Cookie": cookieHeader
                 }
             });
             
@@ -66,14 +72,4 @@ function sleep(): Promise<void> {
     const maxDelay = 4000;
     const delay = Math.floor(Math.random() * (maxDelay - minDelay + 1)) + minDelay;
     return new Promise(resolve => setTimeout(resolve, delay));
-}
-
-const USER_AGENTS = [
-  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
-  "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:122.0) Gecko/20100101 Firefox/122.0",
-  "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
-];
-
-function pickRandomUA(): string {
-  return USER_AGENTS[Math.floor(Math.random() * USER_AGENTS.length)];
 }

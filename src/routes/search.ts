@@ -10,7 +10,16 @@ router.get("/", async (req, res) => {
     }
     const url = req.query.url as string;
 
-    const cards: Card[] = await searchSession(url);
+    // search.ts
+    const cards = await searchSession(url);
+
+    if (!cards) {
+        // Handle the case where runCDP exhausted retries or returned null
+        throw new Error("Failed to retrieve data after multiple rotation attempts.");
+    }
+
+    // Now 'cards' is guaranteed to be Card[]
+    console.log(`Found ${cards.length} cards.`);
 
     return res.json(cards);
 })
